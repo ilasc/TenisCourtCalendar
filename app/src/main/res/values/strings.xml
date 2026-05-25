@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Apulum Tenis</string>
+
+    <!-- Login -->
+    <string name="login_title">Autentificare</string>
+    <string name="login_subtitle">Clubul Sportiv Apulum Tenis</string>
+    <string name="email">Email</string>
+    <string name="password">Parolă</string>
+    <string name="login_button">Intră în cont</string>
+    <string name="login_error">Email sau parolă incorectă</string>
+    <string name="login_loading">Se conectează…</string>
+
+    <!-- Home / Booking -->
+    <string name="greeting">Bună, %1$s!</string>
+    <string name="welcome">Bine ai venit la Apulum Tenis</string>
+    <string name="choose_court">Alege terenul</string>
+    <string name="court_outdoor">Teren exterior</string>
+    <string name="court_indoor">Teren acoperit</string>
+    <string name="surface_label">Suprafață: %1$s</string>
+    <string name="choose_date">Alege data</string>
+    <string name="choose_time">Alege ora</string>
+    <string name="available">Disponibil</string>
+    <string name="unavailable">Indisponibil</string>
+    <string name="your_reservation">Rezervarea ta</string>
+    <string name="continue_button">Confirmă rezervarea</string>
+    <string name="duration_label">Durată: %1$s</string>
+    <string name="duration_60">1 oră</string>
+    <string name="duration_90">1 oră 30</string>
+    <string name="duration_120">2 ore</string>
+    <string name="price_ron">%1$d RON</string>
+    <string name="reservation_summary_line">%1$s • %2$s • %3$s</string>
+    <string name="pick_date_calendar">Alege altă dată</string>
+
+    <!-- Bottom nav -->
+    <string name="nav_home">Acasă</string>
+    <string name="nav_my_reservations">Rezervările mele</string>
+    <string name="nav_favorites">Favorite</string>
+    <string name="nav_profile">Profil</string>
+
+    <!-- My reservations -->
+    <string name="my_reservations_title">Rezervările mele</string>
+    <string name="no_reservations">Nu ai rezervări încă.</string>
+    <string name="reservation_confirmed">Rezervare confirmată!</string>
+    <string name="loading">Se încarcă…</string>
+    <string name="error_generic">A apărut o eroare. Încearcă din nou.</string>
+    <string name="retry">Reîncearcă</string>
+    <string name="logout">Deconectare</string>
+
+    <!-- Placeholders -->
+    <string name="favorites_placeholder">Favorite — în curând</string>
+    <string name="profile_email">Email: %1$s</string>
+
+    <!-- Admin -->
+    <string name="admin_panel_subtitle">Panou administrator</string>
+    <string name="admin_reservations_today">Rezervări astăzi</string>
+    <string name="admin_refresh">Actualizează</string>
+    <string name="admin_filter_all">Toate</string>
+    <string name="admin_court_outdoor_full">Teren exterior (zgură)</string>
+    <string name="admin_court_indoor_full">Teren acoperit (zgură)</string>
+    <string name="admin_res_count">%1$d rez.</string>
+    <string name="admin_col_time">Ora</string>
+    <string name="admin_col_client">Client</string>
+    <string name="admin_col_contact">Contact</string>
+    <string name="admin_col_duration">Durată</string>
+    <string name="admin_col_status">Status</string>
+    <string name="admin_status_confirmed">Confirm.</string>
+    <string name="admin_status_pending">Aștept.</string>
+    <string name="admin_timezone_info">Fus orar: Europa/București</string>
+    <string name="admin_updated_ago">acum 1 minut</string>
+    <string name="admin_nav_dashboard">Dashboard</string>
+    <string name="admin_nav_reservations">Rezervări</string>
+    <string name="admin_nav_clients">Clienți</string>
+    <string name="admin_nav_stats">Statistici</string>
+    <string name="admin_nav_settings">Setări</string>
+    <string name="admin_placeholder">%1$s — în curând</string>
+    <string name="admin_no_reservations">Nicio rezervare pentru această dată.</string>
+    <string name="admin_date_hint">Afișezi rezervările pentru data selectată. Zilele cu punct verde au rezervări.</string>
+</resources>

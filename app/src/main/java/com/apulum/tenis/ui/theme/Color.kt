@@ -1,0 +1,31 @@
+package com.apulum.tenis.ui.theme
+
+import androidx.compose.ui.graphics.Color
+
+val ApulumGreen = Color(0xFF1B4332)
+val ApulumGreenDark = Color(0xFF163728)
+val ApulumGreenLight = Color(0xFF2D6A4F)
+val ApulumOrange = Color(0xFFC67B4E)
+val ApulumBackground = Color(0xFFF7F8F6)
+val ApulumCardBackground = Color(0xFFFFFFFF)
+val ApulumTextPrimary = Color(0xFF1A1A1A)
+val ApulumTextSecondary = Color(0xFF6B7280)
+val ApulumBorder = Color(0xFFE5E7EB)
+val ApulumSlotUnavailable = Color(0xFFD1D5DB)
+val ApulumSummaryBackground = Color(0xFFF3F4F6)
+val ApulumSummaryBorder = ApulumGreen.copy(alpha = 0.2f)
+
+// Admin dashboard (mockup SVG)
+val AdminGreenDeep = Color(0xFF022718)
+val AdminGreenMid = Color(0xFF064A2A)
+val AdminGreenBright = Color(0xFF0B6B3A)
+val AdminAccentGreen = Color(0xFF08783E)
+val AdminHeaderSubtitle = Color(0xFFCFE1D4)
+val AdminCardGreenTint = Color(0xFFDDF4E5)
+val AdminCardClayTint = Color(0xFFF0E5DA)
+val AdminClayAccent = Color(0xFF8C5B2C)
+val AdminStatusConfirmedBg = Color(0xFFE4F6E9)
+val AdminStatusPendingBg = Color(0xFFFFF1D8)
+val AdminStatusPendingText = Color(0xFFC66B00)
+val AdminInfoStripBg = Color(0xFFEEF8F2)
+val AdminNavInactive = Color(0xFF858D88)

@@ -1,0 +1,59 @@
+# Built application files
+*.apk
+*.ap_
+*.aab
+
+# Android Studio / IntelliJ
+*.iml
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.idea/deploymentTargetDropDown.xml
+.idea/render.experimental.xml
+
+# Gradle
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local configuration
+local.properties
+*.keystore
+*.jks
+google-services.json
+
+# Kotlin
+.kotlin/
+
+# Android / NDK
+.externalNativeBuild/
+.cxx/
+captures/
+*.hprof
+
+# Backend (Ktor + H2)
+backend/data/
+*.h2.db
+*.trace.db
+
+# Secrets & env
+.env
+.env.*
+*.pem
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Misc
+*.swp
+*~
