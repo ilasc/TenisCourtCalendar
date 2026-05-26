@@ -243,9 +243,9 @@ class ReservationService {
         }
 
     private fun priceForDuration(minutes: Int): Int = when (minutes) {
-        60 -> 80
-        90 -> 120
-        120 -> 160
+        60 -> 30
+        90 -> 40
+        120 -> 50
         else -> throw IllegalArgumentException("Invalid duration")
     }
 

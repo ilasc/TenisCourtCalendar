@@ -32,7 +32,7 @@ data class BookingUiState(
     val durationMinutes: Int = 60,
     val slots: List<TimeSlotDto> = emptyList(),
     val selectedTime: String? = null,
-    val priceRon: Int = 80,
+    val priceRon: Int = 30,
     val isSubmitting: Boolean = false,
     val bookingSuccess: Boolean = false,
     val error: String? = null
@@ -115,10 +115,10 @@ class BookingViewModel(
 
     fun selectDuration(minutes: Int) {
         val price = when (minutes) {
-            60 -> 80
-            90 -> 120
-            120 -> 160
-            else -> 80
+            60 -> 30
+            90 -> 40
+            120 -> 50
+            else -> 30
         }
         _uiState.update {
             it.copy(durationMinutes = minutes, priceRon = price, selectedTime = null)

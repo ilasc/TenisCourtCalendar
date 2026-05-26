@@ -39,8 +39,8 @@ Server: `http://localhost:8080`
 
 ## Prețuri (RON)
 
-- 60 min → 80
-- 90 min → 120
-- 120 min → 160
+- 60 min → 30
+- 90 min → 40
+- 120 min → 50
 
 Program: 07:00–23:00 (închidere), sloturi la 30 min, fără suprapuneri pe același teren.

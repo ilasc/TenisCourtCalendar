@@ -46,9 +46,9 @@ Română (implicit) și engleză (`values-en/strings.xml`) — urmează limba si
 
 | Durată | Preț |
 |--------|------|
-| 60 min | 80 RON |
-| 90 min | 120 RON |
-| 120 min | 160 RON |
+| 60 min | 30 RON |
+| 90 min | 40 RON |
+| 120 min | 50 RON |
 
 Program teren: **07:00–23:00** (sloturi la 30 min; ultima rezervare 1h poate începe la 22:00).
 
