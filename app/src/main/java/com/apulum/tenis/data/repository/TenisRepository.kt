@@ -12,6 +12,9 @@ import com.apulum.tenis.data.local.SessionStore
 import com.apulum.tenis.data.local.UserSession
 
 class TenisRepository(private val sessionStore: SessionStore) {
+    companion object {
+        const val DISABLED_COURT_ID = "teren2"
+    }
     suspend fun login(email: String, password: String): Result<AuthResponse> {
         val response = ApiClient.api.login(LoginRequest(email, password))
         if (!response.isSuccessful || response.body() == null) {
@@ -25,7 +28,9 @@ class TenisRepository(private val sessionStore: SessionStore) {
     suspend fun logout() = sessionStore.clear()
 
     suspend fun getCourts(token: String): Result<List<CourtDto>> =
-        apiCall { ApiClient.api.courts(ApiClient.bearer(token)) }
+        apiCall { ApiClient.api.courts(ApiClient.bearer(token)) }.map { courts ->
+            courts.map { it.copy(bookable = it.id != DISABLED_COURT_ID) }
+        }
 
     suspend fun getAvailability(
         token: String,
@@ -60,6 +65,15 @@ class TenisRepository(private val sessionStore: SessionStore) {
         request: CreateReservationRequest
     ): Result<ReservationDto> =
         apiCall { ApiClient.api.createReservation(ApiClient.bearer(token), request) }
+
+    suspend fun deleteReservation(token: String, reservationId: Long): Result<Unit> {
+        val response = ApiClient.api.deleteReservation(ApiClient.bearer(token), reservationId)
+        return if (response.isSuccessful) {
+            Result.success(Unit)
+        } else {
+            Result.failure(Exception(response.message()))
+        }
+    }
 
     private inline fun <T> apiCall(block: () -> retrofit2.Response<T>): Result<T> {
         val response = block()

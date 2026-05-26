@@ -31,7 +31,7 @@ Server: `http://localhost:8080`
 | POST | `/api/v1/auth/login` | Nu |
 | POST | `/api/v1/auth/register` | Nu |
 | GET | `/api/v1/courts` | JWT |
-| GET | `/api/v1/availability?courtId=exterior&date=2026-05-23&durationMinutes=60` | JWT |
+| GET | `/api/v1/availability?courtId=teren1&date=2026-05-23&durationMinutes=60` | JWT |
 | GET | `/api/v1/reservations` | JWT |
 | POST | `/api/v1/reservations` | JWT |
 | GET | `/api/v1/admin/reservations?from=2026-05-25&to=2026-06-07` | JWT (admin) |
@@ -43,4 +43,4 @@ Server: `http://localhost:8080`
 - 90 min → 120
 - 120 min → 160
 
-Program: 07:00–22:00 (start ultim slot), fără suprapuneri pe același teren.
+Program: 07:00–23:00 (închidere), sloturi la 30 min, fără suprapuneri pe același teren.

@@ -15,69 +15,86 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.greaterEq
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.lessEq
 import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 class ReservationService {
     companion object {
-        const val COURT_OUTDOOR = "exterior"
+        const val COURT_1 = "teren1"
+        const val COURT_2 = "teren2"
         const val COURT_INDOOR = "acoperit"
+        /** Courts visible in admin but not offered for new bookings. */
+        val DISABLED_COURT_IDS = setOf(COURT_2)
         val OPEN_TIME: LocalTime = LocalTime.of(7, 0)
-        val LAST_SLOT_START: LocalTime = LocalTime.of(22, 0)
         /** Latest allowed end time (e.g. 22:00 + 60 min). */
         val CLOSE_TIME: LocalTime = LocalTime.of(23, 0)
-        val SLOT_TIMES: List<LocalTime> = generateSequence(OPEN_TIME) { prev ->
-            if (prev == LAST_SLOT_START) null else prev.plusHours(1)
-        }.toList()
+        const val SLOT_STEP_MINUTES = 30
         val ALLOWED_DURATIONS = setOf(60, 90, 120)
         private val DATE_FMT = DateTimeFormatter.ISO_LOCAL_DATE
         private val TIME_FMT = DateTimeFormatter.ofPattern("HH:mm")
+        private val CLUB_ZONE = ZoneId.of("Europe/Bucharest")
     }
 
     fun listCourts(): List<CourtDto> = transaction {
-        CourtsTable.selectAll().map { row ->
-            CourtDto(
-                id = row[CourtsTable.id],
-                nameRo = row[CourtsTable.nameRo],
-                nameEn = row[CourtsTable.nameEn],
-                surfaceRo = row[CourtsTable.surfaceRo],
-                surfaceEn = row[CourtsTable.surfaceEn],
-                type = row[CourtsTable.type],
-                imageUrl = row[CourtsTable.imageUrl]
-            )
-        }
+        CourtsTable.selectAll()
+            .map { row ->
+                CourtDto(
+                    id = row[CourtsTable.id],
+                    nameRo = row[CourtsTable.nameRo],
+                    nameEn = row[CourtsTable.nameEn],
+                    surfaceRo = row[CourtsTable.surfaceRo],
+                    surfaceEn = row[CourtsTable.surfaceEn],
+                    type = row[CourtsTable.type],
+                    imageUrl = row[CourtsTable.imageUrl],
+                    bookable = row[CourtsTable.id] !in DISABLED_COURT_IDS
+                )
+            }
+            .sortedBy { courtSortOrder(it.id) }
+    }
+
+    private fun courtSortOrder(courtId: String): Int = when (courtId) {
+        COURT_1 -> 0
+        COURT_2 -> 1
+        COURT_INDOOR -> 2
+        else -> 99
     }
 
     fun availability(courtId: String, dateStr: String, durationMinutes: Int): AvailabilityResponse? {
         if (durationMinutes !in ALLOWED_DURATIONS) return null
         val date = runCatching { LocalDate.parse(dateStr, DATE_FMT) }.getOrNull() ?: return null
-        if (!courtExists(courtId)) return null
+        if (!courtBookable(courtId)) return null
 
         val bookings = loadBookings(courtId, date)
-        val slots = SLOT_TIMES.map { anchor ->
-            resolveSlotForAnchor(anchor, bookings, durationMinutes)
+        val slots = slotStartsForDuration(durationMinutes).map { start ->
+            val periodEnd = start.plusMinutes(SLOT_STEP_MINUTES.toLong())
+            val reservationEnd = start.plusMinutes(durationMinutes.toLong())
+            TimeSlotDto(
+                time = start.format(TIME_FMT),
+                available = !overlapsAny(bookings, start, reservationEnd),
+                occupied = overlapsAny(bookings, start, periodEnd)
+            )
         }
         return AvailabilityResponse(courtId, dateStr, durationMinutes, slots)
     }
 
-    private fun resolveSlotForAnchor(
-        anchor: LocalTime,
-        bookings: List<BookingInterval>,
-        durationMinutes: Int
-    ): TimeSlotDto {
-        val candidates = listOf(anchor, anchor.plusMinutes(30))
-        for (start in candidates) {
-            val end = start.plusMinutes(durationMinutes.toLong())
-            if (end.isAfter(CLOSE_TIME)) continue
-            if (!overlapsAny(bookings, start, end)) {
-                return TimeSlotDto(time = start.format(TIME_FMT), available = true)
-            }
-        }
-        return TimeSlotDto(time = anchor.format(TIME_FMT), available = false)
+    private fun slotStartsForDuration(durationMinutes: Int): List<LocalTime> =
+        generateSequence(OPEN_TIME) { prev ->
+            prev.plusMinutes(SLOT_STEP_MINUTES.toLong())
+        }.takeWhile { start ->
+            !start.plusMinutes(durationMinutes.toLong()).isAfter(CLOSE_TIME)
+        }.toList()
+
+    private fun isValidSlotStart(start: LocalTime): Boolean {
+        if (start.isBefore(OPEN_TIME)) return false
+        val minutesFromOpen = java.time.Duration.between(OPEN_TIME, start).toMinutes()
+        return minutesFromOpen >= 0 && minutesFromOpen % SLOT_STEP_MINUTES == 0L
     }
 
     fun createReservation(userId: Long, request: CreateReservationRequest): ReservationDto {
@@ -86,12 +103,15 @@ class ReservationService {
         }
         val date = LocalDate.parse(request.date, DATE_FMT)
         val start = LocalTime.parse(request.startTime, TIME_FMT)
+        if (!isValidSlotStart(start)) {
+            throw IllegalArgumentException("Invalid start time")
+        }
         val end = start.plusMinutes(request.durationMinutes.toLong())
         if (end.isAfter(CLOSE_TIME)) {
             throw IllegalArgumentException("Reservation exceeds closing time")
         }
-        if (!courtExists(request.courtId)) {
-            throw IllegalArgumentException("Unknown court")
+        if (!courtBookable(request.courtId)) {
+            throw IllegalArgumentException("Court is not available for booking")
         }
 
         return transaction {
@@ -104,8 +124,8 @@ class ReservationService {
                 it[ReservationsTable.userId] = userId
                 it[ReservationsTable.courtId] = request.courtId
                 it[ReservationsTable.date] = date
-                it[ReservationsTable.startTime] = start
-                it[ReservationsTable.endTime] = end
+                it[ReservationsTable.startTime] = start.format(TIME_FMT)
+                it[ReservationsTable.endTime] = end.format(TIME_FMT)
                 it[ReservationsTable.durationMinutes] = request.durationMinutes
                 it[ReservationsTable.priceRon] = price
             } get ReservationsTable.id
@@ -149,14 +169,30 @@ class ReservationService {
             courtNameRo = court[CourtsTable.nameRo],
             courtNameEn = court[CourtsTable.nameEn],
             date = row[ReservationsTable.date].format(DATE_FMT),
-            startTime = row[ReservationsTable.startTime].format(TIME_FMT),
-            endTime = row[ReservationsTable.endTime].format(TIME_FMT),
+            startTime = row[ReservationsTable.startTime],
+            endTime = row[ReservationsTable.endTime],
             durationMinutes = row[ReservationsTable.durationMinutes],
             status = "confirmed",
             clientName = user[UsersTable.displayName],
             clientPhone = user[UsersTable.phone],
             clientEmail = user[UsersTable.email]
         )
+    }
+
+    fun deleteUserReservation(userId: Long, reservationId: Long): Boolean = transaction {
+        val row = ReservationsTable.selectAll()
+            .where {
+                (ReservationsTable.id eq reservationId) and (ReservationsTable.userId eq userId)
+            }
+            .firstOrNull() ?: return@transaction false
+        val endAt = LocalDateTime.of(
+            row[ReservationsTable.date],
+            parseStoredTime(row[ReservationsTable.endTime])
+        )
+        if (!endAt.isAfter(LocalDateTime.now(CLUB_ZONE))) return@transaction false
+        ReservationsTable.deleteWhere {
+            (ReservationsTable.id eq reservationId) and (ReservationsTable.userId eq userId)
+        } > 0
     }
 
     fun userReservations(userId: Long): List<ReservationDto> = transaction {
@@ -168,8 +204,8 @@ class ReservationService {
                     id = row[ReservationsTable.id],
                     courtId = row[ReservationsTable.courtId],
                     date = row[ReservationsTable.date],
-                    start = row[ReservationsTable.startTime],
-                    end = row[ReservationsTable.endTime],
+                    start = parseStoredTime(row[ReservationsTable.startTime]),
+                    end = parseStoredTime(row[ReservationsTable.endTime]),
                     duration = row[ReservationsTable.durationMinutes],
                     price = row[ReservationsTable.priceRon]
                 )
@@ -180,12 +216,25 @@ class ReservationService {
         CourtsTable.selectAll().any { it[CourtsTable.id] == courtId }
     }
 
+    private fun courtBookable(courtId: String): Boolean =
+        courtId !in DISABLED_COURT_IDS && courtExists(courtId)
+
     private data class BookingInterval(val start: LocalTime, val end: LocalTime)
 
     private fun loadBookings(courtId: String, date: LocalDate): List<BookingInterval> = transaction {
         ReservationsTable.selectAll()
             .where { (ReservationsTable.courtId eq courtId) and (ReservationsTable.date eq date) }
-            .map { BookingInterval(it[ReservationsTable.startTime], it[ReservationsTable.endTime]) }
+            .map {
+                BookingInterval(
+                    parseStoredTime(it[ReservationsTable.startTime]),
+                    parseStoredTime(it[ReservationsTable.endTime])
+                )
+            }
+    }
+
+    private fun parseStoredTime(value: String): LocalTime {
+        val normalized = value.trim().let { if (it.length >= 5) it.take(5) else it }
+        return LocalTime.parse(normalized, TIME_FMT)
     }
 
     private fun overlapsAny(bookings: List<BookingInterval>, start: LocalTime, end: LocalTime): Boolean =

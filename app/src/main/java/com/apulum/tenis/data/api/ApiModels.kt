@@ -17,10 +17,15 @@ data class CourtDto(
     val surfaceRo: String,
     val surfaceEn: String,
     val type: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val bookable: Boolean = true
 )
 
-data class TimeSlotDto(val time: String, val available: Boolean)
+data class TimeSlotDto(
+    val time: String,
+    val available: Boolean = false,
+    val occupied: Boolean = false
+)
 
 data class AvailabilityResponse(
     val courtId: String,

@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -113,6 +114,7 @@ fun AppNavigation() {
 private fun MainShell(session: UserSession, onLoggedOut: () -> Unit) {
     val app = LocalContext.current.applicationContext as ApulumTenisApp
     var selectedTab by remember { mutableStateOf(MainTab.Home) }
+    var homeRefreshKey by remember { mutableIntStateOf(0) }
     val snackbarHostState = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val locale = Locale.getDefault()
@@ -130,7 +132,10 @@ private fun MainShell(session: UserSession, onLoggedOut: () -> Unit) {
         bottomBar = {
             ApulumBottomNavBar(
                 selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
+                onTabSelected = { tab ->
+                    selectedTab = tab
+                    if (tab == MainTab.Home) homeRefreshKey++
+                }
             )
         }
     ) { padding ->
@@ -140,6 +145,7 @@ private fun MainShell(session: UserSession, onLoggedOut: () -> Unit) {
             MainTab.Home -> BookingScreen(
                 viewModel = bookingVm,
                 bottomBarPadding = bottomPadding,
+                availabilityRefreshKey = homeRefreshKey,
                 onReservationConfirmed = {
                     scope.launch {
                         snackbarHostState.showSnackbar(
@@ -151,7 +157,10 @@ private fun MainShell(session: UserSession, onLoggedOut: () -> Unit) {
                 }
             )
             MainTab.Reservations -> Box(Modifier.padding(padding)) {
-                MyReservationsScreen(viewModel = reservationsVm)
+                MyReservationsScreen(
+                    viewModel = reservationsVm,
+                    onReservationDeleted = { bookingVm.refreshAvailability() }
+                )
             }
             MainTab.Favorites -> FavoritesScreen()
             MainTab.Profile -> ProfileScreen(

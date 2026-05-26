@@ -1,6 +1,6 @@
 # Apulum Tenis — Rezervări teren
 
-Aplicație Android (Kotlin + Jetpack Compose) și API Ktor pentru **Clubul Sportiv Apulum Tenis** — 2 terenuri (exterior / acoperit), rezervări 60 / 90 / 120 minute, fără suprapuneri.
+Aplicație Android (Kotlin + Jetpack Compose) și API Ktor pentru **Clubul Sportiv Apulum Tenis** — 3 terenuri (Teren 1, Teren 2, Acoperit), rezervări 60 / 90 / 120 minute, fără suprapuneri.
 
 ## Structură
 
@@ -50,7 +50,7 @@ Română (implicit) și engleză (`values-en/strings.xml`) — urmează limba si
 | 90 min | 120 RON |
 | 120 min | 160 RON |
 
-Program teren: **07:00–22:00** (ultima rezervare 1h poate termina la 23:00).
+Program teren: **07:00–23:00** (sloturi la 30 min; ultima rezervare 1h poate începe la 22:00).
 
 ## Ecrane
 
