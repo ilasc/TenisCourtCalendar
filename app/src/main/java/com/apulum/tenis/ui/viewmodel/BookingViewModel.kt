@@ -80,12 +80,16 @@ class BookingViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
             repository.getCourts(token)
                 .onSuccess { courts ->
-                    val defaultCourt = courts.firstOrNull()?.id
-                    _uiState.update {
-                        it.copy(
+                    val defaultCourt = courts.firstOrNull { it.bookable }?.id
+                    _uiState.update { state ->
+                        val selectedStillValid = state.selectedCourtId != null &&
+                            courts.any { court ->
+                                court.id == state.selectedCourtId && court.bookable
+                            }
+                        state.copy(
                             isLoading = false,
                             courts = courts,
-                            selectedCourtId = it.selectedCourtId ?: defaultCourt
+                            selectedCourtId = if (selectedStillValid) state.selectedCourtId else defaultCourt
                         )
                     }
                     refreshAvailability()
@@ -97,6 +101,8 @@ class BookingViewModel(
     }
 
     fun selectCourt(courtId: String) {
+        val court = _uiState.value.courts.find { it.id == courtId } ?: return
+        if (!court.bookable) return
         if (_uiState.value.selectedCourtId == courtId) return
         _uiState.update { it.copy(selectedCourtId = courtId, selectedTime = null) }
         refreshAvailability()

@@ -12,7 +12,11 @@ private val LightColorScheme = lightColorScheme(
     background = ApulumBackground,
     surface = ApulumCardBackground,
     onBackground = ApulumTextPrimary,
-    onSurface = ApulumTextPrimary
+    onSurface = ApulumTextPrimary,
+    error = ApulumError,
+    onError = ApulumOnError,
+    errorContainer = ApulumErrorContainer,
+    onErrorContainer = ApulumOnErrorContainer
 )
 
 @Composable

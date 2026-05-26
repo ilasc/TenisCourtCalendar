@@ -15,8 +15,10 @@
     <string name="greeting">Bună, %1$s!</string>
     <string name="welcome">Bine ai venit la Apulum Tenis</string>
     <string name="choose_court">Alege terenul</string>
-    <string name="court_outdoor">Teren exterior</string>
-    <string name="court_indoor">Teren acoperit</string>
+    <string name="court_1">Teren 1</string>
+    <string name="court_2">Teren 2</string>
+    <string name="court_coming_soon">Disponibil în curând</string>
+    <string name="court_indoor">Acoperit</string>
     <string name="surface_label">Suprafață: %1$s</string>
     <string name="choose_date">Alege data</string>
     <string name="choose_time">Alege ora</string>
@@ -40,7 +42,11 @@
 
     <!-- My reservations -->
     <string name="my_reservations_title">Rezervările mele</string>
-    <string name="no_reservations">Nu ai rezervări încă.</string>
+    <string name="no_reservations">Nu ai rezervări viitoare.</string>
+    <string name="delete_booking">Șterge</string>
+    <string name="delete_booking_title">Ștergi rezervarea?</string>
+    <string name="delete_booking_message">Rezervarea va fi anulată definitiv.</string>
+    <string name="delete_booking_confirm">Șterge</string>
     <string name="reservation_confirmed">Rezervare confirmată!</string>
     <string name="loading">Se încarcă…</string>
     <string name="error_generic">A apărut o eroare. Încearcă din nou.</string>
@@ -56,8 +62,9 @@
     <string name="admin_reservations_today">Rezervări astăzi</string>
     <string name="admin_refresh">Actualizează</string>
     <string name="admin_filter_all">Toate</string>
-    <string name="admin_court_outdoor_full">Teren exterior (zgură)</string>
-    <string name="admin_court_indoor_full">Teren acoperit (zgură)</string>
+    <string name="admin_court_1_full">Teren 1 (zgură)</string>
+    <string name="admin_court_2_full">Teren 2 (zgură)</string>
+    <string name="admin_court_indoor_full">Acoperit (zgură)</string>
     <string name="admin_res_count">%1$d rez.</string>
     <string name="admin_col_time">Ora</string>
     <string name="admin_col_client">Client</string>

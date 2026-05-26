@@ -29,13 +29,17 @@ data class CourtDto(
     val surfaceRo: String,
     val surfaceEn: String,
     val type: String,
-    val imageUrl: String
+    val imageUrl: String,
+    val bookable: Boolean = true
 )
 
 @Serializable
 data class TimeSlotDto(
     val time: String,
-    val available: Boolean
+    /** Can start a new reservation of the requested duration at this time. */
+    val available: Boolean,
+    /** This 30-minute period overlaps an existing booking. */
+    val occupied: Boolean
 )
 
 @Serializable

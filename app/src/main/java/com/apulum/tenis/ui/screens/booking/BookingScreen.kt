@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -61,17 +62,29 @@ import com.apulum.tenis.ui.viewmodel.BookingViewModel
 import java.time.Instant
 import java.time.ZoneId
 
+private const val TIME_SLOT_COLUMNS = 4
+private val TimeSlotRowHeight = 36.dp
+private val TimeSlotSpacing = 4.dp
+private val SectionSpacing = 10.dp
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingScreen(
     viewModel: BookingViewModel,
     bottomBarPadding: PaddingValues,
+    availabilityRefreshKey: Int = 0,
     onReservationConfirmed: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     var showDatePicker by remember { mutableStateOf(false) }
     val isRo = remember { java.util.Locale.getDefault().language == "ro" }
     val horizontalPadding = 16.dp
+
+    LaunchedEffect(availabilityRefreshKey) {
+        if (!state.isLoading && state.selectedCourtId != null) {
+            viewModel.refreshAvailability()
+        }
+    }
 
     if (showDatePicker) {
         val pickerState = rememberDatePickerState(
@@ -117,41 +130,44 @@ fun BookingScreen(
         return
     }
 
-    Box(
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .background(ApulumBackground)
+            .apulumStatusBarPadding()
+            .padding(bottom = bottomBarPadding.calculateBottomPadding())
     ) {
         Column(
             modifier = Modifier
-                .fillMaxSize()
-                .apulumStatusBarPadding()
+                .weight(1f)
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = horizontalPadding)
-                .padding(bottom = bottomBarPadding.calculateBottomPadding() + 16.dp)
         ) {
-            SectionTitle(title = stringResource(R.string.choose_court))
+            SectionTitle(title = stringResource(R.string.choose_court), compact = true)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 state.courts.forEach { court ->
-                    val selected = court.id == state.selectedCourtId
+                    val selected = court.bookable && court.id == state.selectedCourtId
                     CourtCard(
                         modifier = Modifier.weight(1f),
-                        court = court,
+                        courtId = court.id,
                         courtName = courtDisplayName(court, isRo),
                         isSelected = selected,
                         isOutdoor = court.type == "outdoor",
+                        enabled = court.bookable,
+                        comingSoonLabel = stringResource(R.string.court_coming_soon),
+                        compact = true,
                         onClick = { viewModel.selectCourt(court.id) }
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(20.dp))
-            SectionTitle(title = stringResource(R.string.choose_date))
+            Spacer(modifier = Modifier.height(SectionSpacing))
+            SectionTitle(title = stringResource(R.string.choose_date), compact = true)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 state.dateOptions.forEach { option ->
                     DateCard(
@@ -160,24 +176,28 @@ fun BookingScreen(
                         dayNumber = option.dayNumber,
                         monthName = option.monthName,
                         isSelected = option.date == state.selectedDate,
+                        compact = true,
                         onClick = { viewModel.selectDate(option.date) }
                     )
                 }
                 CalendarPickerCard(
                     modifier = Modifier.weight(1f),
+                    compact = true,
                     onClick = { showDatePicker = true }
                 )
             }
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(SectionSpacing))
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = stringResource(R.string.choose_time),
                     fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
+                    fontSize = 16.sp,
                     color = ApulumTextPrimary
                 )
                 AvailabilityLegend()
@@ -185,8 +205,8 @@ fun BookingScreen(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    .padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp)
             ) {
                 DurationChip(
                     label = stringResource(R.string.duration_60),
@@ -204,32 +224,37 @@ fun BookingScreen(
                     onClick = { viewModel.selectDuration(120) }
                 )
             }
+            val slotRowCount = (state.slots.size + TIME_SLOT_COLUMNS - 1) / TIME_SLOT_COLUMNS
+            val slotGridHeight = (slotRowCount * TimeSlotRowHeight.value).coerceAtLeast(
+                TimeSlotRowHeight.value
+            ).dp
             LazyVerticalGrid(
-                columns = GridCells.Fixed(4),
+                columns = GridCells.Fixed(TIME_SLOT_COLUMNS),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(280.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
+                    .height(slotGridHeight),
+                horizontalArrangement = Arrangement.spacedBy(TimeSlotSpacing),
+                verticalArrangement = Arrangement.spacedBy(TimeSlotSpacing),
                 userScrollEnabled = false
             ) {
                 items(state.slots) { slot ->
                     TimeSlotChip(
                         time = slot.time,
                         available = slot.available,
+                        occupied = slot.occupied,
                         selected = slot.time == state.selectedTime,
+                        compact = true,
                         onClick = { viewModel.selectTime(slot.time) }
                     )
                 }
             }
-            Spacer(modifier = Modifier.height(16.dp))
         }
 
         ReservationSummaryBar(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
+                .fillMaxWidth()
                 .padding(horizontal = horizontalPadding)
-                .padding(bottom = bottomBarPadding.calculateBottomPadding() + 8.dp),
+                .padding(top = 4.dp, bottom = 8.dp),
             courtName = viewModel.selectedCourt()?.let { courtDisplayName(it, isRo) } ?: "—",
             dateLine = viewModel.formattedSelectedDate(),
             time = state.selectedTime ?: "—",
@@ -249,12 +274,16 @@ fun BookingScreen(
 
 
 @Composable
-private fun SectionTitle(title: String, subtitle: String? = null) {
-    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+private fun SectionTitle(
+    title: String,
+    subtitle: String? = null,
+    compact: Boolean = false
+) {
+    Column(modifier = Modifier.padding(vertical = if (compact) 4.dp else 8.dp)) {
         Text(
             text = title,
             fontWeight = FontWeight.Bold,
-            fontSize = 18.sp,
+            fontSize = if (compact) 16.sp else 18.sp,
             color = ApulumTextPrimary
         )
         subtitle?.let {

@@ -210,9 +210,16 @@ fun AdminDashboardScreen(
                                     }
                                 )
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(R.string.court_outdoor)) },
+                                    text = { Text(stringResource(R.string.court_1)) },
                                     onClick = {
-                                        viewModel.setCourtFilter(AdminDashboardViewModel.COURT_OUTDOOR)
+                                        viewModel.setCourtFilter(AdminDashboardViewModel.COURT_1)
+                                        showCourtMenu = false
+                                    }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.court_2)) },
+                                    onClick = {
+                                        viewModel.setCourtFilter(AdminDashboardViewModel.COURT_2)
                                         showCourtMenu = false
                                     }
                                 )
@@ -267,13 +274,24 @@ fun AdminDashboardScreen(
                             modifier = Modifier.padding(16.dp)
                         )
                         else -> {
-                            val outdoor = viewModel.reservationsForCourt(AdminDashboardViewModel.COURT_OUTDOOR)
+                            val court1 = viewModel.reservationsForCourt(AdminDashboardViewModel.COURT_1)
+                            val court2 = viewModel.reservationsForCourt(AdminDashboardViewModel.COURT_2)
                             val indoor = viewModel.reservationsForCourt(AdminDashboardViewModel.COURT_INDOOR)
-                            if (state.courtFilter == null || state.courtFilter == AdminDashboardViewModel.COURT_OUTDOOR) {
+                            if (state.courtFilter == null || state.courtFilter == AdminDashboardViewModel.COURT_1) {
                                 CourtReservationCard(
-                                    title = stringResource(R.string.admin_court_outdoor_full),
-                                    count = outdoor.size,
-                                    reservations = outdoor,
+                                    title = stringResource(R.string.admin_court_1_full),
+                                    count = court1.size,
+                                    reservations = court1,
+                                    isOutdoor = true,
+                                    isRo = isRo
+                                )
+                                Spacer(modifier = Modifier.height(14.dp))
+                            }
+                            if (state.courtFilter == null || state.courtFilter == AdminDashboardViewModel.COURT_2) {
+                                CourtReservationCard(
+                                    title = stringResource(R.string.admin_court_2_full),
+                                    count = court2.size,
+                                    reservations = court2,
                                     isOutdoor = true,
                                     isRo = isRo
                                 )
@@ -288,7 +306,7 @@ fun AdminDashboardScreen(
                                     isRo = isRo
                                 )
                             }
-                            if (outdoor.isEmpty() && indoor.isEmpty()) {
+                            if (court1.isEmpty() && court2.isEmpty() && indoor.isEmpty()) {
                                 Text(
                                     text = stringResource(R.string.admin_no_reservations),
                                     color = ApulumTextSecondary,

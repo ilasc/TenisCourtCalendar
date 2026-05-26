@@ -7,9 +7,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -37,43 +37,60 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.apulum.tenis.R
-import com.apulum.tenis.data.api.CourtDto
+import com.apulum.tenis.ui.theme.AdminInfoStripBg
 import com.apulum.tenis.ui.theme.ApulumBorder
 import com.apulum.tenis.ui.theme.ApulumGreen
 import com.apulum.tenis.ui.theme.ApulumSlotUnavailable
+import com.apulum.tenis.ui.theme.ApulumSummaryBorder
 import com.apulum.tenis.ui.theme.ApulumTextPrimary
 import com.apulum.tenis.ui.theme.ApulumTextSecondary
 
 @Composable
 fun CourtCard(
-    court: CourtDto,
+    courtId: String,
     courtName: String,
     isSelected: Boolean,
     isOutdoor: Boolean,
+    enabled: Boolean,
+    comingSoonLabel: String,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
-    val borderColor = if (isSelected) ApulumGreen else ApulumBorder
-    val borderWidth = if (isSelected) 2.dp else 1.dp
-    val courtPhoto = courtDrawableRes(court.id)
+    val borderColor = when {
+        !enabled -> ApulumBorder
+        isSelected -> ApulumGreen
+        else -> ApulumBorder
+    }
+    val borderWidth = if (enabled && isSelected) 2.dp else 1.dp
+    val cardPadding = if (compact) 6.dp else 12.dp
+    val iconSize = if (compact) 14.dp else 18.dp
+    val nameSize = if (compact) 11.sp else 13.sp
+    val imageHeight = if (compact) 56.dp else 108.dp
+    val contentColor = if (enabled) ApulumTextPrimary else ApulumTextSecondary
+    val courtPhoto = courtDrawableRes(courtId)
     Card(
-        modifier = modifier
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
+        modifier = modifier.then(
+            if (enabled) Modifier.clickable(onClick = onClick) else Modifier
+        ),
+        shape = RoundedCornerShape(if (compact) 12.dp else 14.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = if (enabled) Color.White else Color(0xFFF5F5F5)
+        ),
         border = BorderStroke(borderWidth, borderColor),
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
         Box {
-            if (isSelected) {
+            if (enabled && isSelected) {
                 Box(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(8.dp)
-                        .size(22.dp)
+                        .padding(if (compact) 6.dp else 8.dp)
+                        .size(if (compact) 18.dp else 22.dp)
                         .background(ApulumGreen, CircleShape),
                     contentAlignment = Alignment.Center
                 ) {
@@ -85,32 +102,58 @@ fun CourtCard(
                     )
                 }
             }
-            Column(modifier = Modifier.padding(10.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.padding(cardPadding)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Icon(
                         imageVector = if (isOutdoor) Icons.Default.WbSunny else Icons.Outlined.Warehouse,
                         contentDescription = null,
-                        tint = ApulumTextPrimary,
-                        modifier = Modifier.size(18.dp)
+                        tint = contentColor,
+                        modifier = Modifier.size(iconSize)
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = courtName,
                         fontWeight = FontWeight.Bold,
-                        fontSize = 13.sp,
-                        color = ApulumTextPrimary
+                        fontSize = nameSize,
+                        color = contentColor,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-                Image(
-                    painter = painterResource(courtPhoto),
-                    contentDescription = courtName,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 8.dp)
-                        .height(108.dp)
-                        .clip(RoundedCornerShape(10.dp)),
-                    contentScale = ContentScale.Crop
-                )
+                if (enabled) {
+                    Image(
+                        painter = painterResource(courtPhoto),
+                        contentDescription = courtName,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp)
+                            .height(imageHeight)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Crop
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 6.dp)
+                            .height(imageHeight)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(ApulumSlotUnavailable.copy(alpha = 0.35f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = comingSoonLabel,
+                            fontSize = if (compact) 10.sp else 12.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = ApulumTextSecondary,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(horizontal = 4.dp)
+                        )
+                    }
+                }
             }
         }
     }
@@ -124,13 +167,15 @@ fun DateCard(
     isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    hasBookings: Boolean = false
+    hasBookings: Boolean = false,
+    compact: Boolean = false
 ) {
     val borderColor = if (isSelected) ApulumGreen else ApulumBorder
     val textColor = if (isSelected) ApulumGreen else ApulumTextPrimary
+    val cardHeight = if (compact) 72.dp else 96.dp
     Card(
         modifier = modifier
-            .height(96.dp)
+            .height(cardHeight)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -140,29 +185,32 @@ fun DateCard(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 10.dp, horizontal = 4.dp),
+                    .padding(
+                        vertical = if (compact) 6.dp else 10.dp,
+                        horizontal = 4.dp
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
                     dayAbbrev,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
+                    fontSize = if (compact) 11.sp else 12.sp,
+                    lineHeight = if (compact) 12.sp else 14.sp,
                     color = textColor,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
                     dayNumber,
-                    fontSize = 20.sp,
-                    lineHeight = 22.sp,
+                    fontSize = if (compact) 16.sp else 20.sp,
+                    lineHeight = if (compact) 18.sp else 22.sp,
                     color = textColor,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    modifier = Modifier.padding(vertical = if (compact) 2.dp else 4.dp)
                 )
                 Text(
                     monthName,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
+                    fontSize = if (compact) 11.sp else 12.sp,
+                    lineHeight = if (compact) 12.sp else 14.sp,
                     color = textColor
                 )
             }
@@ -180,10 +228,15 @@ fun DateCard(
 }
 
 @Composable
-fun CalendarPickerCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun CalendarPickerCard(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
+) {
+    val cardHeight = if (compact) 72.dp else 96.dp
     Card(
         modifier = modifier
-            .height(96.dp)
+            .height(cardHeight)
             .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
@@ -200,15 +253,15 @@ fun CalendarPickerCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
                 imageVector = Icons.Outlined.CalendarMonth,
                 contentDescription = stringResource(R.string.pick_date_calendar),
                 tint = ApulumTextPrimary,
-                modifier = Modifier.size(26.dp)
+                modifier = Modifier.size(if (compact) 22.dp else 26.dp)
             )
             Text(
                 text = stringResource(R.string.pick_date_calendar),
-                fontSize = 10.sp,
-                lineHeight = 12.sp,
+                fontSize = if (compact) 9.sp else 10.sp,
+                lineHeight = if (compact) 10.sp else 12.sp,
                 textAlign = TextAlign.Center,
                 color = ApulumTextSecondary,
-                modifier = Modifier.padding(top = 6.dp)
+                modifier = Modifier.padding(top = if (compact) 4.dp else 6.dp)
             )
         }
     }
@@ -218,28 +271,35 @@ fun CalendarPickerCard(onClick: () -> Unit, modifier: Modifier = Modifier) {
 fun TimeSlotChip(
     time: String,
     available: Boolean,
+    occupied: Boolean,
     selected: Boolean,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    compact: Boolean = false
 ) {
-    val shape = RoundedCornerShape(10.dp)
+    val shape = RoundedCornerShape(if (compact) 8.dp else 10.dp)
+    val chipHeight = if (compact) 32.dp else 44.dp
+    val fontSize = if (compact) 11.sp else 14.sp
     val background = when {
         selected -> ApulumGreen
-        !available -> ApulumSlotUnavailable
+        occupied -> ApulumSlotUnavailable
+        available -> AdminInfoStripBg
         else -> Color.White
     }
     val textColor = when {
         selected -> Color.White
-        !available -> Color.White.copy(alpha = 0.9f)
-        else -> ApulumGreen
+        occupied -> Color.White.copy(alpha = 0.9f)
+        available -> ApulumGreen
+        else -> ApulumTextSecondary
     }
     val border = when {
-        selected || !available -> null
-        else -> BorderStroke(1.5.dp, ApulumGreen)
+        selected || occupied -> null
+        available -> BorderStroke(1.dp, ApulumSummaryBorder)
+        else -> BorderStroke(1.dp, ApulumBorder)
     }
     Box(
         modifier = modifier
-            .height(44.dp)
+            .height(chipHeight)
             .clip(shape)
             .then(
                 if (border != null) Modifier.border(border, shape) else Modifier
@@ -252,7 +312,7 @@ fun TimeSlotChip(
             text = time,
             color = textColor,
             fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
-            fontSize = 14.sp
+            fontSize = fontSize
         )
     }
 }
@@ -263,7 +323,8 @@ fun AvailabilityLegend(modifier: Modifier = Modifier) {
         Box(
             modifier = Modifier
                 .size(width = 18.dp, height = 14.dp)
-                .border(1.5.dp, ApulumGreen, RoundedCornerShape(3.dp))
+                .border(1.dp, ApulumSummaryBorder, RoundedCornerShape(3.dp))
+                .background(AdminInfoStripBg, RoundedCornerShape(3.dp))
         )
         Text(
             text = stringResource(R.string.available),

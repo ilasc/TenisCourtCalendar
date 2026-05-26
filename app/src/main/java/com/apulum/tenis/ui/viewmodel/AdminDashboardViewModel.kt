@@ -61,7 +61,8 @@ class AdminDashboardViewModel(
             .replaceFirstChar { if (it.isLowerCase()) it.titlecase(locale) else it.toString() }
 
     fun courtFilterLabel(isRo: Boolean): String = when (_uiState.value.courtFilter) {
-        COURT_OUTDOOR -> if (isRo) "Exterior" else "Outdoor"
+        COURT_1 -> if (isRo) "Teren 1" else "Court 1"
+        COURT_2 -> if (isRo) "Teren 2" else "Court 2"
         COURT_INDOOR -> if (isRo) "Acoperit" else "Indoor"
         else -> if (isRo) "Toate" else "All"
     }
@@ -121,7 +122,8 @@ class AdminDashboardViewModel(
     }
 
     companion object {
-        const val COURT_OUTDOOR = "exterior"
+        const val COURT_1 = "teren1"
+        const val COURT_2 = "teren2"
         const val COURT_INDOOR = "acoperit"
     }
 }

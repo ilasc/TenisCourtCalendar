@@ -20,6 +20,7 @@ import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
+import io.ktor.server.routing.delete
 import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
@@ -87,6 +88,19 @@ fun Route.apiRoutes(
                     call.respond(HttpStatusCode.Conflict, ErrorResponse(e.message ?: "Conflict"))
                 } catch (e: IllegalArgumentException) {
                     call.respond(HttpStatusCode.BadRequest, ErrorResponse(e.message ?: "Bad request"))
+                }
+            }
+
+            delete("/reservations/{id}") {
+                val userId = call.principal<JWTPrincipal>()?.let(JwtConfig::userId)
+                    ?: return@delete call.respond(HttpStatusCode.Unauthorized)
+                val reservationId = call.parameters["id"]?.toLongOrNull()
+                    ?: return@delete call.respond(HttpStatusCode.BadRequest, ErrorResponse("Invalid reservation id"))
+                val deleted = reservationService.deleteUserReservation(userId, reservationId)
+                if (deleted) {
+                    call.respond(HttpStatusCode.NoContent)
+                } else {
+                    call.respond(HttpStatusCode.NotFound, ErrorResponse("Reservation not found or cannot be deleted"))
                 }
             }
 
