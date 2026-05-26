@@ -13,6 +13,7 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class ReservationsUiState(
     val isLoading: Boolean = true,
@@ -30,6 +31,7 @@ class ReservationsViewModel(
     private val _uiState = MutableStateFlow(ReservationsUiState())
     val uiState: StateFlow<ReservationsUiState> = _uiState.asStateFlow()
 
+    private val locale = if (isRomanian) Locale.forLanguageTag("ro-RO") else Locale.ENGLISH
     private val timeFormatter = DateTimeFormatter.ofPattern("HH:mm")
     private val clubZone = ZoneId.of("Europe/Bucharest")
 
@@ -55,6 +57,21 @@ class ReservationsViewModel(
 
     fun courtName(item: ReservationDto): String =
         if (isRomanian) item.courtNameRo else item.courtNameEn
+
+    fun formattedDate(item: ReservationDto): String {
+        val date = runCatching { LocalDate.parse(item.date) }.getOrNull() ?: return item.date
+        val day = DateTimeFormatter.ofPattern("EEE", locale).format(date)
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(locale) else it.toString() }
+        val month = DateTimeFormatter.ofPattern("MMM", locale).format(date)
+            .replaceFirstChar { if (it.isLowerCase()) it.titlecase(locale) else it.toString() }
+        return "$day, ${date.dayOfMonth} $month"
+    }
+
+    fun formattedTimeRange(item: ReservationDto): String {
+        val start = item.startTime.trim().take(5)
+        val end = item.endTime.trim().take(5)
+        return "$start - $end"
+    }
 
     fun deleteReservation(reservationId: Long, onDeleted: () -> Unit = {}) {
         viewModelScope.launch {

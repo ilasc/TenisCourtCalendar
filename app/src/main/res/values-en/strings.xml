@@ -39,10 +39,11 @@
 
     <string name="my_reservations_title">My bookings</string>
     <string name="no_reservations">You have no upcoming reservations.</string>
-    <string name="delete_booking">Delete</string>
-    <string name="delete_booking_title">Delete booking?</string>
-    <string name="delete_booking_message">This booking will be permanently cancelled.</string>
-    <string name="delete_booking_confirm">Delete</string>
+    <string name="delete_booking">Cancel</string>
+    <string name="cancel_booking_title">Cancel booking?</string>
+    <string name="cancel_booking_message">This booking will be cancelled and the court will become available to others.</string>
+    <string name="keep_booking">Keep booking</string>
+    <string name="cancel_booking_confirm">Cancel booking</string>
     <string name="reservation_confirmed">Booking confirmed!</string>
     <string name="loading">Loading…</string>
     <string name="error_generic">Something went wrong. Please try again.</string>

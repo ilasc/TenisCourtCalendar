@@ -43,10 +43,11 @@
     <!-- My reservations -->
     <string name="my_reservations_title">Rezervările mele</string>
     <string name="no_reservations">Nu ai rezervări viitoare.</string>
-    <string name="delete_booking">Șterge</string>
-    <string name="delete_booking_title">Ștergi rezervarea?</string>
-    <string name="delete_booking_message">Rezervarea va fi anulată definitiv.</string>
-    <string name="delete_booking_confirm">Șterge</string>
+    <string name="delete_booking">Anulează</string>
+    <string name="cancel_booking_title">Anulezi rezervarea?</string>
+    <string name="cancel_booking_message">Rezervarea va fi anulată, iar terenul va deveni disponibil pentru alții.</string>
+    <string name="keep_booking">Păstrează rezervarea</string>
+    <string name="cancel_booking_confirm">Anulează rezervarea</string>
     <string name="reservation_confirmed">Rezervare confirmată!</string>
     <string name="loading">Se încarcă…</string>
     <string name="error_generic">A apărut o eroare. Încearcă din nou.</string>
